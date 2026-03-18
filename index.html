@@ -1,0 +1,1214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>i3D Quick — Architect's Rapid Estimation Engine</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#080808; --s1:#0f0f0f; --s2:#151515; --s3:#1c1c1c;
+  --bd:#252525; --bd2:#333;
+  --g:#c9a84c; --g2:#e8c96a; --gd:#7a6530; --gx:#c9a84c18;
+  --tx:#ededea; --muted:#888; --dim:#444;
+  --green:#4caf7a; --red:#cf6679; --blue:#6495c4; --amber:#e0a855;
+  --ply:#7a9e7e; --wpc:#9b6b9b; --ceil:#c4895a;
+  --mn:'JetBrains Mono',monospace;
+  --serif:'Cormorant Garamond',serif;
+  --sans:'Inter',sans-serif;
+}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--tx);font-family:var(--sans);min-height:100vh;font-size:14px;line-height:1.5}
+input,select,textarea{font-family:var(--sans);background:var(--s1);border:1px solid var(--bd);color:var(--tx);padding:10px 13px;border-radius:6px;font-size:13px;outline:none;width:100%;transition:border-color .15s,background .15s}
+input:focus,select:focus{border-color:var(--g);background:#0a0a0a}
+input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
+select{cursor:pointer}select option{background:#151515}
+button{font-family:var(--sans);cursor:pointer;transition:all .15s}
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:var(--s1)}
+::-webkit-scrollbar-thumb{background:var(--bd2);border-radius:2px}
+
+/* ── TOPBAR ── */
+#topbar{
+  position:sticky;top:0;z-index:100;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 28px;height:58px;
+  background:rgba(8,8,8,0.96);border-bottom:1px solid var(--bd);
+  backdrop-filter:blur(10px);
+}
+.logo-mark{
+  display:flex;align-items:center;gap:13px;
+}
+.logo-gem{
+  width:36px;height:36px;background:var(--g);border-radius:7px;
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--mn);font-size:12px;font-weight:700;color:#000;
+  letter-spacing:-0.5px;
+}
+.logo-text{line-height:1.2}
+.logo-main{font-family:var(--serif);font-size:17px;font-weight:700;color:var(--tx);letter-spacing:0.02em}
+.logo-sub{font-size:9px;color:var(--muted);letter-spacing:0.14em;text-transform:uppercase}
+.top-stats{display:flex;gap:24px}
+.ts{text-align:right}
+.ts-lbl{font-size:9px;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase}
+.ts-val{font-size:13px;font-weight:600;font-family:var(--mn);color:var(--g)}
+.top-btns{display:flex;gap:8px}
+.btn-sm{
+  background:transparent;border:1px solid var(--bd);color:var(--muted);
+  padding:7px 14px;border-radius:5px;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;
+}
+.btn-sm:hover{border-color:var(--g);color:var(--g)}
+
+/* ── TABS ── */
+#tabbar{
+  display:flex;background:var(--s1);border-bottom:1px solid var(--bd);
+  padding:0 28px;overflow-x:auto;
+}
+.tab{
+  background:transparent;border:none;border-bottom:2px solid transparent;
+  color:var(--muted);padding:14px 18px;font-size:10px;font-weight:500;
+  letter-spacing:0.12em;text-transform:uppercase;white-space:nowrap;
+  transition:all .15s;
+}
+.tab.active{color:var(--g);border-bottom-color:var(--g);font-weight:700}
+.tab:hover:not(.active){color:var(--tx)}
+.tab-panel{display:none}.tab-panel.active{display:block}
+
+/* ── LAYOUT ── */
+#content{padding:28px;max-width:1200px;margin:0 auto}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.gapv{display:flex;flex-direction:column;gap:16px}
+
+/* ── CARDS ── */
+.card{background:var(--s2);border:1px solid var(--bd);border-radius:10px;padding:20px;margin-bottom:14px}
+.card.gold{background:linear-gradient(135deg,#c9a84c0d,#c9a84c04);border-color:#c9a84c30}
+.card.dark{background:var(--s1)}
+.sh{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.sh-l{display:flex;align-items:center;gap:10px}
+.sh-bar{width:3px;height:18px;background:var(--g);border-radius:2px}
+.sh-title{font-size:10px;letter-spacing:0.16em;color:var(--g);text-transform:uppercase;font-weight:700}
+.lbl{font-size:10px;letter-spacing:0.1em;color:var(--muted);text-transform:uppercase;display:block;margin-bottom:5px;font-weight:500}
+.fld{display:flex;flex-direction:column}
+
+/* ── STAT CARDS ── */
+.stat-row{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+.stat{background:var(--s2);border:1px solid var(--bd);border-radius:8px;padding:14px 16px;flex:1;min-width:130px}
+.stat-lbl{font-size:9px;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:6px}
+.stat-val{font-size:20px;font-weight:700;font-family:var(--mn)}
+.stat-sub{font-size:10px;color:var(--muted);margin-top:3px}
+
+/* ── BUTTONS ── */
+.btn{background:transparent;border:1px solid var(--gd);color:var(--g);padding:9px 18px;border-radius:6px;font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase}
+.btn:hover{background:#c9a84c15;border-color:var(--g)}
+.btn-gold{background:linear-gradient(135deg,#c9a84c,#a67c2e);border:none;color:#000;padding:12px 28px;border-radius:7px;font-size:12px;font-weight:800;letter-spacing:0.1em;text-transform:uppercase}
+.btn-gold:hover{opacity:0.9;transform:translateY(-1px);box-shadow:0 4px 20px #c9a84c30}
+.btn-danger{background:transparent;border:1px solid #cf667930;color:var(--red);padding:7px 14px;border-radius:5px;font-size:11px}
+.btn-danger:hover{background:#cf667910}
+
+/* ── INFO BOX ── */
+.info{background:#c9a84c0c;border:1px solid var(--gd);border-left:3px solid var(--g);border-radius:6px;padding:13px 16px;font-size:12px;color:var(--muted);line-height:1.8;margin-bottom:16px}
+.info strong{color:var(--g)}
+
+/* ── RESULT SCREEN ── */
+.result-hero{
+  background:linear-gradient(135deg,#c9a84c12,#c9a84c04);
+  border:1px solid #c9a84c35;border-radius:12px;
+  padding:28px 32px;margin-bottom:20px;text-align:center;
+}
+.result-title{font-family:var(--serif);font-size:13px;letter-spacing:0.2em;color:var(--muted);text-transform:uppercase;margin-bottom:8px}
+.result-range{font-family:var(--serif);font-size:42px;font-weight:700;color:var(--g);line-height:1.1}
+.result-sub{font-size:12px;color:var(--muted);margin-top:6px}
+
+/* ── LAYER CARDS ── */
+.layer{background:var(--s2);border:1px solid var(--bd);border-radius:8px;padding:16px;margin-bottom:10px}
+.layer-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.layer-num{font-family:var(--mn);font-size:10px;color:var(--gd);font-weight:700;letter-spacing:0.1em}
+.layer-name{font-size:12px;font-weight:600;color:var(--tx);margin-left:8px}
+.layer-pct{font-size:10px;color:var(--muted)}
+.layer-bar-bg{height:4px;background:var(--s3);border-radius:2px;overflow:hidden;margin-bottom:10px}
+.layer-bar{height:100%;border-radius:2px;transition:width .8s ease}
+.layer-items{display:flex;flex-wrap:wrap;gap:8px}
+.layer-item{background:var(--s3);border:1px solid var(--bd);border-radius:5px;padding:5px 10px;font-size:11px}
+.layer-item span{color:var(--g);font-family:var(--mn);font-weight:600}
+
+/* ── SCORE GAUGE ── */
+.score-circle{
+  width:140px;height:140px;border-radius:50%;
+  border:6px solid var(--bd);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  margin:0 auto 16px;position:relative;
+}
+.score-num{font-family:var(--mn);font-size:36px;font-weight:700;color:var(--g)}
+.score-label{font-size:10px;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase}
+.score-param{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--bd)}
+.score-param:last-child{border-bottom:none}
+.score-param-name{font-size:12px;color:var(--muted)}
+.score-bar-wrap{width:120px;height:4px;background:var(--s3);border-radius:2px;overflow:hidden;margin:0 12px}
+.score-bar{height:100%;border-radius:2px}
+.score-param-val{font-family:var(--mn);font-size:11px;font-weight:600;min-width:30px;text-align:right}
+
+/* ── BOQ TABLE ── */
+.boq-tbl{width:100%;border-collapse:collapse;font-size:12px}
+.boq-tbl th{padding:7px 10px;text-align:left;font-size:9px;letter-spacing:0.1em;color:var(--muted);text-transform:uppercase;border-bottom:1px solid var(--bd);font-weight:500}
+.boq-tbl th.r{text-align:right}
+.boq-tbl td{padding:6px 10px;border-bottom:1px solid #ffffff06;vertical-align:middle}
+.boq-tbl td.r{text-align:right;font-family:var(--mn)}
+.boq-section{background:var(--s3);padding:6px 10px;font-size:9px;letter-spacing:0.16em;font-weight:700;text-transform:uppercase}
+.boq-total td{background:var(--s1);font-weight:700;border-top:1px solid var(--bd)}
+.ci{background:#0a0a0a;border:1px solid var(--bd);color:var(--tx);padding:4px 7px;border-radius:4px;font-size:12px;font-family:var(--sans);outline:none;width:80px}
+.ci:focus{border-color:var(--g)}
+.ci.r{text-align:right}
+
+/* ── LIBRARY CARDS ── */
+.lib-card{background:var(--s2);border:1px solid var(--bd);border-radius:10px;overflow:hidden}
+.lib-card-hdr{padding:14px 16px;border-bottom:1px solid var(--bd);display:flex;align-items:center;gap:10px}
+.lib-card-icon{width:32px;height:32px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:16px}
+.lib-card-title{font-size:13px;font-weight:700;color:var(--tx)}
+.lib-card-sub{font-size:10px;color:var(--muted)}
+.lib-compare{width:100%;border-collapse:collapse}
+.lib-compare th{padding:9px 12px;background:var(--s3);font-size:9px;letter-spacing:0.12em;font-weight:700;text-transform:uppercase;border-bottom:1px solid var(--bd);text-align:left}
+.lib-compare td{padding:8px 12px;border-bottom:1px solid #ffffff06;font-size:12px;color:var(--muted);vertical-align:top}
+.lib-compare td:first-child{color:var(--tx);font-weight:500;white-space:nowrap;width:130px}
+.lib-compare tr:hover td{background:#ffffff03}
+.badge{display:inline-block;font-size:9px;font-weight:700;letter-spacing:0.08em;padding:2px 8px;border-radius:10px;text-transform:uppercase}
+.badge-green{background:#4caf7a18;color:var(--green);border:1px solid #4caf7a30}
+.badge-amber{background:#e0a85518;color:var(--amber);border:1px solid #e0a85530}
+.badge-red{background:#cf667918;color:var(--red);border:1px solid #cf667930}
+.badge-blue{background:#6495c418;color:var(--blue);border:1px solid #6495c430}
+
+/* ── RANGE SLIDER ── */
+input[type=range]{-webkit-appearance:none;height:4px;border-radius:2px;background:var(--bd);outline:none;padding:0;border:none}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:var(--g);cursor:pointer;border:2px solid #000}
+
+/* ── PRINT ── */
+@media print{
+  body{background:#fff!important;color:#111!important}
+  #topbar,#tabbar,.no-print,.btn,.btn-gold,.btn-sm{display:none!important}
+  #content{padding:0!important;max-width:100%!important}
+  .tab-panel{display:none!important}
+  #print-area{display:block!important}
+  .pr-hdr{display:flex;justify-content:space-between;align-items:flex-start;padding-bottom:12px;border-bottom:3px solid #c9a84c;margin-bottom:20px}
+  .pr-logo{font-size:20px;font-weight:800;font-family:'Cormorant Garamond',serif}
+  .pr-sub{font-size:9px;color:#888;letter-spacing:0.12em;text-transform:uppercase}
+  .pr-tbl{width:100%;border-collapse:collapse;font-size:11px;margin:10px 0}
+  .pr-tbl th{background:#f5f0e8;padding:6px 8px;font-size:9px;font-weight:700;letter-spacing:0.08em;border-bottom:2px solid #c9a84c;text-align:left}
+  .pr-tbl th.r{text-align:right}
+  .pr-tbl td{padding:5px 8px;border-bottom:1px solid #eee}
+  .pr-tbl td.r{text-align:right}
+  .pr-sec{font-size:10px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:#c9a84c;margin:16px 0 6px;border-bottom:1px solid #eee;padding-bottom:4px}
+  .pr-footer{border-top:1px solid #ddd;padding-top:10px;margin-top:24px;font-size:9px;color:#aaa;display:flex;justify-content:space-between}
+  @page{size:A4;margin:12mm}
+}
+@media screen{#print-area{display:none}}
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div id="topbar">
+  <div class="logo-mark">
+    <div class="logo-gem">i3</div>
+    <div class="logo-text">
+      <div class="logo-main">i3D Quick</div>
+      <div class="logo-sub">Architect's Rapid Estimation Engine</div>
+    </div>
+  </div>
+  <div class="top-stats">
+    <div class="ts"><div class="ts-lbl">Est. Cost</div><div class="ts-val" id="hs-cost">— —</div></div>
+    <div class="ts"><div class="ts-lbl">Total Area</div><div class="ts-val" id="hs-area">— sqft</div></div>
+    <div class="ts"><div class="ts-lbl">Cost/sqft</div><div class="ts-val" id="hs-psf">— —</div></div>
+  </div>
+  <div class="top-btns">
+    <button class="btn-sm" onclick="doPrint()">🖨 Export PDF</button>
+  </div>
+</div>
+
+<!-- TABBAR -->
+<div id="tabbar">
+  <button class="tab active" data-tab="quick">⚡ Client Estimator</button>
+  <button class="tab" data-tab="materials">📐 Materials</button>
+  <button class="tab" data-tab="cost">₹ Cost Engine</button>
+  <button class="tab" data-tab="boq">📋 BOQ Generator</button>
+  <button class="tab" data-tab="efficiency">◈ Design Efficiency</button>
+  <button class="tab" data-tab="library">📚 Library</button>
+  <button class="tab" data-tab="rates">⚙ Rates & Factors</button>
+</div>
+
+<div id="content">
+<div id="print-area"></div>
+
+<!-- ══════════════════════════════════════════
+     TAB 1 — CLIENT ESTIMATOR
+══════════════════════════════════════════ -->
+<div class="tab-panel active" id="tab-quick">
+  <div class="info">
+    <strong>30-Second Client Estimator</strong> — Enter 5 inputs and instantly get a credible preliminary estimate.
+    Structure · Shell · Finishes · Services · External Works. Use during client meetings for instant feasibility.
+  </div>
+
+  <!-- INPUTS -->
+  <div class="card">
+    <div class="sh"><div class="sh-l"><div class="sh-bar"></div><div class="sh-title">Project Inputs</div></div></div>
+    <div class="grid3" style="margin-bottom:14px">
+      <div class="fld"><span class="lbl">Built-up Area (sqft)</span>
+        <input id="q-area" type="number" value="2000" placeholder="e.g. 2000" oninput="calcAll()">
+      </div>
+      <div class="fld"><span class="lbl">Number of Floors</span>
+        <select id="q-floors" onchange="calcAll()">
+          <option value="1">G (Ground Only)</option>
+          <option value="2" selected>G+1</option>
+          <option value="3">G+2</option>
+          <option value="4">G+3</option>
+          <option value="5">G+4</option>
+        </select>
+      </div>
+      <div class="fld"><span class="lbl">Number of Bedrooms</span>
+        <select id="q-beds" onchange="calcAll()">
+          <option value="1">1 BHK</option>
+          <option value="2">2 BHK</option>
+          <option value="3" selected>3 BHK</option>
+          <option value="4">4 BHK</option>
+          <option value="5">5 BHK</option>
+        </select>
+      </div>
+      <div class="fld"><span class="lbl">Construction Quality</span>
+        <select id="q-quality" onchange="calcAll()">
+          <option value="basic">Basic (₹1,800/sqft)</option>
+          <option value="standard" selected>Standard (₹2,200/sqft)</option>
+          <option value="premium">Premium (₹2,800/sqft)</option>
+        </select>
+      </div>
+      <div class="fld"><span class="lbl">Location</span>
+        <select id="q-location" onchange="calcAll()">
+          <option value="1.0" selected>Coimbatore (×1.00)</option>
+          <option value="1.05">Madurai (×1.05)</option>
+          <option value="1.08">Trichy (×1.08)</option>
+          <option value="1.1">Salem / Erode (×1.10)</option>
+          <option value="1.15">Chennai (×1.15)</option>
+          <option value="1.25">Bangalore (×1.25)</option>
+        </select>
+      </div>
+      <div style="display:flex;align-items:flex-end">
+        <button class="btn-gold" onclick="calcAll()" style="width:100%">Generate Estimate</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- RESULT HERO -->
+  <div class="result-hero" id="result-hero">
+    <div class="result-title">Preliminary Project Cost</div>
+    <div class="result-range" id="r-range">₹ — —</div>
+    <div class="result-sub" id="r-sub">Enter project details above and click Generate</div>
+  </div>
+
+  <!-- 5 LAYERS -->
+  <div class="sh" style="margin-top:4px"><div class="sh-l"><div class="sh-bar"></div><div class="sh-title">5-Layer Cost Breakdown</div></div></div>
+  <div id="layers-output"></div>
+
+  <!-- MATERIAL QUANTITIES -->
+  <div class="sh" style="margin-top:8px"><div class="sh-l"><div class="sh-bar" style="background:var(--blue)"></div><div class="sh-title" style="color:var(--blue)">Material Quantities</div></div></div>
+  <div class="grid4" id="mat-cards" style="margin-bottom:20px"></div>
+
+  <!-- ROOM PLANNING -->
+  <div class="sh"><div class="sh-l"><div class="sh-bar" style="background:var(--ply)"></div><div class="sh-title" style="color:var(--ply)">Typical Room Planning Guidance</div></div></div>
+  <div id="room-output" class="card dark"></div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     TAB 2 — MATERIALS
+══════════════════════════════════════════ -->
+<div class="tab-panel" id="tab-materials">
+  <div class="info">
+    <strong>7 Backbone Formulas</strong> — Industry-standard thumb rules used by experienced architects and QS professionals.
+    Quantities auto-calculated from built-up area set in the Client Estimator tab.
+  </div>
+  <div class="stat-row" id="mat-stats"></div>
+
+  <div class="card">
+    <div class="sh"><div class="sh-l"><div class="sh-bar"></div><div class="sh-title">Formula Reference</div></div></div>
+    <table class="boq-tbl">
+      <thead><tr>
+        <th>Item</th><th>Formula</th><th>Low</th><th>Standard</th><th>High</th>
+        <th class="r">Your Quantity</th><th class="r">Unit</th>
+      </tr></thead>
+      <tbody id="formula-tbl"></tbody>
+    </table>
+  </div>
+
+  <div class="card dark">
+    <div class="sh"><div class="sh-l"><div class="sh-bar" style="background:var(--blue)"></div><div class="sh-title" style="color:var(--blue)">Design Sensitivity — Change Area Instantly</div></div></div>
+    <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+      <div style="flex:1;min-width:200px">
+        <span class="lbl">Adjust Area: <span id="sens-area-lbl" style="color:var(--g);font-family:var(--mn)">2000</span> sqft</span>
+        <input type="range" id="sens-area" min="500" max="10000" step="100" value="2000" oninput="sensitivityCalc()" style="width:100%">
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap" id="sens-output"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     TAB 3 — COST ENGINE
+══════════════════════════════════════════ -->
+<div class="tab-panel" id="tab-cost">
+  <div class="info">
+    <strong>Architecture Cost Intelligence</strong> — Base cost adjusted by 10 architectural parameters.
+    Two houses with the same area can have 15–20% cost difference based on design decisions.
+  </div>
+
+  <div class="grid2">
+    <div>
+      <div class="card">
+        <div class="sh"><div class="sh-l"><div class="sh-bar"></div><div class="sh-title">Base Parameters</div></div></div>
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <div class="fld"><span class="lbl">Area (sqft)</span><input id="c-area" type="number" value="2000" oninput="costCalc()"></div>
+          <div class="fld"><span class="lbl">Quality</span>
+            <select id="c-quality" onchange="costCalc()">
+              <option value="basic">Basic — ₹1,800/sqft</option>
+              <option value="standard" selected>Standard — ₹2,200/sqft</option>
+              <option value="premium">Premium — ₹2,800/sqft</option>
+            </select>
+          </div>
+          <div class="fld"><span class="lbl">Location Factor</span>
+            <select id="c-loc" onchange="costCalc()">
+              <option value="1.0" selected>Coimbatore ×1.00</option>
+              <option value="1.05">Madurai ×1.05</option>
+              <option value="1.08">Trichy ×1.08</option>
+              <option value="1.1">Salem / Erode ×1.10</option>
+              <option value="1.15">Chennai ×1.15</option>
+              <option value="1.25">Bangalore ×1.25</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="sh"><div class="sh-l"><div class="sh-bar" style="background:var(--amber)"></div><div class="sh-title" style="color:var(--amber)">10 Architectural Modifiers</div></div></div>
+        <div style="display:flex;flex-direction:column;gap:10px" id="modifiers-list"></div>
+      </div>
+    </div>
+
+    <div>
+      <div class="card gold">
+        <div class="sh"><div class="sh-l"><div class="sh-bar" style="background:var(--g)"></div><div class="sh-title">Cost Breakdown</div></div></div>
+        <div id="cost-breakdown"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     TAB 4 — BOQ GENERATOR
+══════════════════════════════════════════ -->
+<div class="tab-panel" id="tab-boq">
+  <div class="info">
+    <strong>Preliminary BOQ</strong> — Auto-generated from thumb rules. Rates are editable.
+    Not a replacement for detailed BOQ — use for early feasibility and client communication.
+  </div>
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px">
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      <div class="fld" style="flex:none"><span class="lbl">Area (sqft)</span><input id="b-area" type="number" value="2000" style="width:120px" oninput="boqCalc()"></div>
+      <div class="fld" style="flex:none"><span class="lbl">Quality</span>
+        <select id="b-quality" style="width:160px" onchange="boqCalc()">
+          <option value="basic">Basic</option>
+          <option value="standard" selected>Standard</option>
+          <option value="premium">Premium</option>
+        </select>
+      </div>
+    </div>
+    <button class="btn-sm no-print" onclick="printBOQ()">🖨 Print BOQ</button>
+  </div>
+  <div class="card dark">
+    <table class="boq-tbl" id="boq-table"></table>
+  </div>
+  <div class="stat-row" id="boq-totals" style="margin-top:14px"></div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     TAB 5 — DESIGN EFFICIENCY
+══════════════════════════════════════════ -->
+<div class="tab-panel" id="tab-efficiency">
+  <div class="info">
+    <strong>Design Efficiency Score</strong> — Measures how economical a building design is to construct.
+    Two buildings with the same area can have 15–20% cost difference due to design inefficiency.
+  </div>
+
+  <div class="grid2">
+    <div class="card">
+      <div class="sh"><div class="sh-l"><div class="sh-bar"></div><div class="sh-title">Design Parameters</div></div></div>
+      <div style="display:flex;flex-direction:column;gap:14px">
+        <div class="fld"><span class="lbl">Building Shape</span>
+          <select id="e-shape" onchange="effCalc()">
+            <option value="95">Simple Rectangle — Very Efficient</option>
+            <option value="85" selected>L-Shape / Moderate Projections</option>
+            <option value="72">Complex / Multi-faced Design</option>
+            <option value="60">Highly Complex Irregular</option>
+          </select>
+        </div>
+        <div class="fld"><span class="lbl">Floor Height</span>
+          <select id="e-height" onchange="effCalc()">
+            <option value="100">Standard 10 ft — No Adjustment</option>
+            <option value="93" selected>Premium 11 ft — +3% cost</option>
+            <option value="86">Luxury 12 ft — +6% cost</option>
+            <option value="79">Extra 13 ft+ — +9% cost</option>
+          </select>
+        </div>
+        <div class="fld"><span class="lbl">Structural Span</span>
+          <select id="e-span" onchange="effCalc()">
+            <option value="96" selected>3.5–4 m — Economical</option>
+            <option value="88">4–5 m — Moderate</option>
+            <option value="78">5–6 m — Heavy Structure</option>
+            <option value="68">6 m+ — Very Heavy</option>
+          </select>
+        </div>
+        <div class="fld"><span class="lbl">Window / Glazing Ratio</span>
+          <select id="e-window" onchange="effCalc()">
+            <option value="95">Minimal 10–15% — Very Efficient</option>
+            <option value="90" selected>Optimal 15–25% — Standard</option>
+            <option value="82">Large 25–35% — Moderate Cost</option>
+            <option value="72">Full Glazing 35%+ — High Cost</option>
+          </select>
+        </div>
+        <div class="fld"><span class="lbl">Circulation Area %</span>
+          <select id="e-circ" onchange="effCalc()">
+            <option value="95" selected>8–10% — Very Efficient</option>
+            <option value="85">11–15% — Good</option>
+            <option value="75">16–20% — Moderate</option>
+            <option value="65">20%+ — Inefficient</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="card gold" style="text-align:center">
+        <div class="sh" style="justify-content:center"><div class="sh-l"><div class="sh-bar"></div><div class="sh-title">Design Efficiency Score</div></div></div>
+        <div class="score-circle" id="score-circle">
+          <div class="score-num" id="score-num">88</div>
+          <div class="score-label">/ 100</div>
+        </div>
+        <div id="score-interp" style="font-size:13px;font-weight:600;color:var(--g);margin-bottom:16px"></div>
+        <div id="score-params"></div>
+      </div>
+
+      <div class="card dark" id="eff-advice" style="margin-top:0"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     TAB 6 — LIBRARY
+══════════════════════════════════════════ -->
+<div class="tab-panel" id="tab-library">
+  <div class="info">
+    <strong>Materials Reference Library</strong> — Comparative data for client meetings.
+    Share specifications, pros/cons and cost ranges at a single point of contact.
+  </div>
+
+  <div class="grid2" style="margin-bottom:16px">
+    <!-- MASONRY -->
+    <div class="lib-card">
+      <div class="lib-card-hdr">
+        <div class="lib-card-icon" style="background:#7a9e7e18">🧱</div>
+        <div><div class="lib-card-title">Masonry — Wall Materials</div><div class="lib-card-sub">AAC Block vs Red Brick vs Fly Ash Brick</div></div>
+      </div>
+      <table class="lib-compare">
+        <thead><tr><th>Property</th><th>AAC Block</th><th>Red Brick</th><th>Fly Ash</th></tr></thead>
+        <tbody>
+          <tr><td>Material</td><td>Autoclaved Aerated Concrete</td><td>Clay Bricks</td><td>Fly Ash + Cement</td></tr>
+          <tr><td>Size</td><td>600×200×200 mm</td><td>190×90×90 mm</td><td>230×110×75 mm</td></tr>
+          <tr><td>Weight</td><td><span class="badge badge-green">Light</span></td><td><span class="badge badge-red">Heavy</span></td><td><span class="badge badge-amber">Medium</span></td></tr>
+          <tr><td>Thermal Insulation</td><td><span class="badge badge-green">Excellent</span></td><td><span class="badge badge-amber">Moderate</span></td><td><span class="badge badge-green">Good</span></td></tr>
+          <tr><td>Compressive Strength</td><td>3–4 MPa</td><td>7–8 MPa</td><td>5–6 MPa</td></tr>
+          <tr><td>Cost (approx)</td><td>₹60–75/unit</td><td>₹8–12/unit</td><td>₹5–8/unit</td></tr>
+          <tr><td>Mortar Joint</td><td>Thin bed (3mm)</td><td>12–15 mm</td><td>10–12 mm</td></tr>
+          <tr><td>Fire Resistance</td><td><span class="badge badge-green">Excellent</span></td><td><span class="badge badge-green">Good</span></td><td><span class="badge badge-green">Good</span></td></tr>
+          <tr><td>Best For</td><td>Premium, AC buildings</td><td>General construction</td><td>Eco-friendly builds</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- FLOORING -->
+    <div class="lib-card">
+      <div class="lib-card-hdr">
+        <div class="lib-card-icon" style="background:#6b8faa18">⬛</div>
+        <div><div class="lib-card-title">Flooring Materials</div><div class="lib-card-sub">Ceramic vs Vitrified vs Granite vs Marble</div></div>
+      </div>
+      <table class="lib-compare">
+        <thead><tr><th>Property</th><th>Ceramic</th><th>Vitrified</th><th>Granite</th><th>Marble</th></tr></thead>
+        <tbody>
+          <tr><td>Composition</td><td>Clay fired</td><td>Glass + clay</td><td>Natural stone</td><td>Natural stone</td></tr>
+          <tr><td>Cost/sqft</td><td><span class="badge badge-green">₹60–100</span></td><td><span class="badge badge-amber">₹120–200</span></td><td><span class="badge badge-red">₹250–500</span></td><td><span class="badge badge-red">₹300–700</span></td></tr>
+          <tr><td>Durability</td><td>Moderate</td><td>High</td><td>Very High</td><td>High</td></tr>
+          <tr><td>Maintenance</td><td><span class="badge badge-green">Easy</span></td><td><span class="badge badge-green">Easy</span></td><td><span class="badge badge-green">Low</span></td><td><span class="badge badge-red">High</span></td></tr>
+          <tr><td>Slip Resistance</td><td>Good</td><td>Moderate</td><td>Good</td><td>Low when wet</td></tr>
+          <tr><td>Heat Resistance</td><td>Good</td><td>Good</td><td>Excellent</td><td>Good</td></tr>
+          <tr><td>Best For</td><td>Bathrooms, utility</td><td>Living, bedrooms</td><td>Outdoor, kitchen</td><td>Premium interiors</td></tr>
+          <tr><td>Finish</td><td>Matt/Glossy</td><td>Mirror/Matt</td><td>Polished/Bush</td><td>Polished/Honed</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="grid2" style="margin-bottom:16px">
+    <!-- PAINT -->
+    <div class="lib-card">
+      <div class="lib-card-hdr">
+        <div class="lib-card-icon" style="background:#9b6b9b18">🎨</div>
+        <div><div class="lib-card-title">Paint Types</div><div class="lib-card-sub">Interior vs Exterior vs Texture</div></div>
+      </div>
+      <table class="lib-compare">
+        <thead><tr><th>Property</th><th>Emulsion</th><th>Exterior WC</th><th>Texture</th><th>Enamel</th></tr></thead>
+        <tbody>
+          <tr><td>Application</td><td>Interior walls</td><td>Exterior walls</td><td>Feature walls</td><td>Wood/Metal</td></tr>
+          <tr><td>Cost/sqft</td><td>₹18–30</td><td>₹25–40</td><td>₹45–80</td><td>₹20–35</td></tr>
+          <tr><td>Durability</td><td>3–5 years</td><td>5–8 years</td><td>7–10 years</td><td>5–7 years</td></tr>
+          <tr><td>Washable</td><td>Yes</td><td>Yes</td><td>Yes</td><td>Yes</td></tr>
+          <tr><td>Finish</td><td>Matt/Sheen</td><td>Matt</td><td>Textured</td><td>Gloss</td></tr>
+          <tr><td>Coverage (sqft/ltr)</td><td>120–140</td><td>100–120</td><td>40–60</td><td>100–120</td></tr>
+          <tr><td>Top Brands</td><td>Asian, Berger</td><td>Asian, Nerolac</td><td>Asian, Dulux</td><td>Berger, Nerolac</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ROOFING / SLAB -->
+    <div class="lib-card">
+      <div class="lib-card-hdr">
+        <div class="lib-card-icon" style="background:#c4895a18">🏗</div>
+        <div><div class="lib-card-title">RCC Slab Types</div><div class="lib-card-sub">Conventional vs Waffle vs Flat Plate</div></div>
+      </div>
+      <table class="lib-compare">
+        <thead><tr><th>Property</th><th>Conventional</th><th>Waffle Slab</th><th>Flat Plate</th><th>Precast</th></tr></thead>
+        <tbody>
+          <tr><td>Thickness</td><td>100–150 mm</td><td>200–350 mm</td><td>150–250 mm</td><td>60–150 mm</td></tr>
+          <tr><td>Span Range</td><td>3–5 m</td><td>6–15 m</td><td>4–8 m</td><td>3–6 m</td></tr>
+          <tr><td>Relative Cost</td><td><span class="badge badge-green">Low</span></td><td><span class="badge badge-red">High</span></td><td><span class="badge badge-amber">Medium</span></td><td><span class="badge badge-amber">Medium</span></td></tr>
+          <tr><td>Construction Time</td><td>Normal</td><td>Longer</td><td>Normal</td><td><span class="badge badge-green">Fast</span></td></tr>
+          <tr><td>Steel Saving</td><td>—</td><td>20–30%</td><td>—</td><td>—</td></tr>
+          <tr><td>Best For</td><td>Residential</td><td>Commercial long span</td><td>Flat soffit need</td><td>Repetitive floors</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- THUMB RULE QUICK REF -->
+  <div class="lib-card">
+    <div class="lib-card-hdr">
+      <div class="lib-card-icon" style="background:#c9a84c18">📏</div>
+      <div><div class="lib-card-title">Architect's Quick Estimation Rulebook</div><div class="lib-card-sub">Core thumb rules — for rapid feasibility, not detailed BOQ</div></div>
+    </div>
+    <table class="lib-compare">
+      <thead><tr><th>Item</th><th>Formula</th><th>Low Range</th><th>Standard</th><th>High Range</th><th>Unit</th></tr></thead>
+      <tbody>
+        <tr><td>Steel (RCC Residential)</td><td>Area × factor</td><td>3.5 kg/sqft</td><td>4.0 kg/sqft</td><td>4.5 kg/sqft</td><td>kg</td></tr>
+        <tr><td>Concrete</td><td>Area × factor</td><td>0.075 m³/sqft</td><td>0.08 m³/sqft</td><td>0.085 m³/sqft</td><td>m³</td></tr>
+        <tr><td>Brickwork</td><td>Area × factor</td><td>8 nos/sqft</td><td>8.5 nos/sqft</td><td>9 nos/sqft</td><td>nos</td></tr>
+        <tr><td>Plaster Area</td><td>Area × 4</td><td>3.8×</td><td>4.0×</td><td>4.2×</td><td>sqft</td></tr>
+        <tr><td>Paint Area</td><td>Area × 3.5</td><td>3.2×</td><td>3.5×</td><td>3.8×</td><td>sqft</td></tr>
+        <tr><td>Floor Tiles</td><td>Area × 1.05</td><td>1.0×</td><td>1.05×</td><td>1.1×</td><td>sqft</td></tr>
+        <tr><td>Electrical Points</td><td>Area ÷ 22</td><td>1/25 sqft</td><td>1/22 sqft</td><td>1/18 sqft</td><td>nos</td></tr>
+        <tr><td>Plumbing Fixtures</td><td>Area ÷ 100</td><td>Area÷120</td><td>Area÷100</td><td>Area÷80</td><td>nos</td></tr>
+        <tr><td>External Works</td><td>5–10% of cost</td><td>5%</td><td>7.5%</td><td>10%</td><td>%</td></tr>
+        <tr><td>Structure Cost %</td><td>% of total</td><td>25%</td><td>27%</td><td>30%</td><td>%</td></tr>
+        <tr><td>Finishes Cost %</td><td>% of total</td><td>25%</td><td>30%</td><td>35%</td><td>%</td></tr>
+        <tr><td>Services Cost %</td><td>% of total</td><td>15%</td><td>17%</td><td>20%</td><td>%</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     TAB 7 — RATES & FACTORS
+══════════════════════════════════════════ -->
+<div class="tab-panel" id="tab-rates">
+  <div class="info">
+    <strong>Editable Rates & Factors</strong> — All default values can be adjusted here.
+    Changes apply across all calculators instantly.
+  </div>
+
+  <div class="grid2">
+    <div class="card">
+      <div class="sh"><div class="sh-l"><div class="sh-bar"></div><div class="sh-title">Construction Quality Rates (₹/sqft)</div></div></div>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--bd)">
+          <span style="color:var(--muted);font-size:13px">Basic</span>
+          <div style="display:flex;align-items:center;gap:6px"><span style="color:var(--muted);font-size:12px">₹</span><input id="rate-basic" class="ci r" type="number" value="1800" oninput="calcAll()"><span style="color:var(--muted);font-size:11px">/sqft</span></div>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--bd)">
+          <span style="color:var(--muted);font-size:13px">Standard</span>
+          <div style="display:flex;align-items:center;gap:6px"><span style="color:var(--muted);font-size:12px">₹</span><input id="rate-standard" class="ci r" type="number" value="2200" oninput="calcAll()"><span style="color:var(--muted);font-size:11px">/sqft</span></div>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0">
+          <span style="color:var(--muted);font-size:13px">Premium</span>
+          <div style="display:flex;align-items:center;gap:6px"><span style="color:var(--muted);font-size:12px">₹</span><input id="rate-premium" class="ci r" type="number" value="2800" oninput="calcAll()"><span style="color:var(--muted);font-size:11px">/sqft</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="sh"><div class="sh-l"><div class="sh-bar" style="background:var(--blue)"></div><div class="sh-title" style="color:var(--blue)">Material Rates</div></div></div>
+      <div style="display:flex;flex-direction:column;gap:8px" id="mat-rates-edit"></div>
+    </div>
+
+    <div class="card">
+      <div class="sh"><div class="sh-l"><div class="sh-bar" style="background:var(--green)"></div><div class="sh-title" style="color:var(--green)">Steel Factors (kg/sqft)</div></div></div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--bd)">
+          <span style="color:var(--muted);font-size:12px">Low Load</span>
+          <input id="sf-low" class="ci r" type="number" value="3.5" step="0.1" oninput="calcAll()">
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--bd)">
+          <span style="color:var(--muted);font-size:12px">Standard</span>
+          <input id="sf-std" class="ci r" type="number" value="4.0" step="0.1" oninput="calcAll()">
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0">
+          <span style="color:var(--muted);font-size:12px">Heavy Load</span>
+          <input id="sf-high" class="ci r" type="number" value="4.5" step="0.1" oninput="calcAll()">
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="sh"><div class="sh-l"><div class="sh-bar" style="background:var(--amber)"></div><div class="sh-title" style="color:var(--amber)">Services & External Works</div></div></div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--bd)">
+          <span style="color:var(--muted);font-size:12px">Services Add-on %</span>
+          <input id="pct-services" class="ci r" type="number" value="15" oninput="calcAll()">
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0">
+          <span style="color:var(--muted);font-size:12px">External Works %</span>
+          <input id="pct-ext" class="ci r" type="number" value="7.5" oninput="calcAll()">
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /content -->
+
+<script>
+// ═══ HELPERS ═══
+var N=function(id,d){var v=parseFloat(document.getElementById(id)?document.getElementById(id).value:d);return isNaN(v)?d:v;};
+var V=function(id){return document.getElementById(id)?document.getElementById(id).value:"";};
+var fc=function(v){if(!v||isNaN(v))return"—";v=Number(v);if(v>=1e7)return"₹"+(v/1e7).toFixed(2)+"Cr";if(v>=1e5)return"₹"+(v/1e5).toFixed(2)+"L";return"₹"+Math.round(v).toLocaleString("en-IN");};
+var fn=function(v,d){return isNaN(parseFloat(v))?"—":Number(v).toLocaleString("en-IN",{maximumFractionDigits:d||0});};
+var $=function(id){return document.getElementById(id);};
+
+// ═══ RATES ═══
+var RATES={basic:1800,standard:2200,premium:2800};
+var MAT_RATES={steel:70,concrete:7500,bricks:10,plaster:35,paint:25,tiles:130,electrical:2500,plumbing:6000};
+var MAT_RATE_LABELS={steel:"Steel (kg)",concrete:"Concrete (m³)",bricks:"Bricks (nos)",plaster:"Plaster (sqft)",paint:"Paint (sqft)",tiles:"Tiles (sqft)",electrical:"Electrical (point)",plumbing:"Plumbing (fixture)"};
+var LAYER_COLORS=["#6495c4","#7a9e7e","#c4895a","#9b6b9b","#c9a84c"];
+
+// ═══ QUALITY RATE GETTER ═══
+function getRate(q){
+  var base={basic:N("rate-basic",1800),standard:N("rate-standard",2200),premium:N("rate-premium",2800)};
+  return base[q]||base.standard;
+}
+
+// ═══ MATERIAL QUANTITIES ═══
+function getMats(area,quality){
+  var sf={basic:N("sf-low",3.5),standard:N("sf-std",4.0),premium:N("sf-high",4.5)};
+  var steelF=sf[quality]||4.0;
+  return{
+    steel:area*steelF,
+    concrete:area*0.08,
+    bricks:area*8.5,
+    plaster:area*4,
+    paint:area*3.5,
+    tiles:area*1.05,
+    electrical:Math.round(area/22),
+    plumbing:Math.round(area/100)
+  };
+}
+
+// ═══ MAIN CALC ═══
+function calcAll(){
+  var area=N("q-area",2000);
+  var floors=N("q-floors",2);
+  var beds=N("q-beds",3);
+  var quality=V("q-quality")||"standard";
+  var locF=parseFloat(V("q-location"))||1.0;
+  var svcPct=N("pct-services",15);
+  var extPct=N("pct-ext",7.5);
+
+  var rate=getRate(quality);
+  var baseArea=area;
+  var baseCost=baseArea*rate*locF;
+  var svcAdd=baseCost*(svcPct/100);
+  var extAdd=baseCost*(extPct/100);
+  var totalLow=baseCost;
+  var totalHigh=baseCost+svcAdd+extAdd;
+  var mid=(totalLow+totalHigh)/2;
+
+  // Header stats
+  $("hs-cost").textContent=fc(mid);
+  $("hs-area").textContent=fn(area)+" sqft";
+  $("hs-psf").textContent="₹"+Math.round(mid/area).toLocaleString("en-IN")+"/sqft";
+
+  // Hero
+  $("r-range").textContent=fc(totalLow)+" – "+fc(totalHigh);
+  $("r-sub").textContent=fn(area)+" sqft · "+V("q-floors").replace("1","G").replace("2","G+1").replace("3","G+2").replace("4","G+3").replace("5","G+4")+" · "+quality.charAt(0).toUpperCase()+quality.slice(1)+" Quality";
+
+  // 5 Layers
+  var layers=[
+    {num:"01",name:"Structure",pct:27,color:LAYER_COLORS[0],items:[
+      {l:"Steel",v:fn(getMats(area,quality).steel)+" kg"},
+      {l:"Concrete",v:fn(getMats(area,quality).concrete)+" m³"}
+    ]},
+    {num:"02",name:"Shell",pct:18,color:LAYER_COLORS[1],items:[
+      {l:"Brickwork",v:fn(getMats(area,quality).bricks)+" nos"}
+    ]},
+    {num:"03",name:"Finishes",pct:30,color:LAYER_COLORS[2],items:[
+      {l:"Plaster",v:fn(getMats(area,quality).plaster)+" sqft"},
+      {l:"Paint",v:fn(getMats(area,quality).paint)+" sqft"},
+      {l:"Tiles",v:fn(getMats(area,quality).tiles)+" sqft"}
+    ]},
+    {num:"04",name:"Services",pct:17,color:LAYER_COLORS[3],items:[
+      {l:"Electrical",v:getMats(area,quality).electrical+" points"},
+      {l:"Plumbing",v:getMats(area,quality).plumbing+" fixtures"}
+    ]},
+    {num:"05",name:"External Works",pct:8,color:LAYER_COLORS[4],items:[
+      {l:"Compound, Gate, Landscape",v:"~"+fn(totalHigh*0.075)}
+    ]}
+  ];
+
+  var lhtml="";
+  layers.forEach(function(l){
+    var amt=totalHigh*l.pct/100;
+    lhtml+='<div class="layer">'
+      +'<div class="layer-hdr">'
+      +'<div style="display:flex;align-items:center"><span class="layer-num">LAYER '+l.num+'</span><span class="layer-name">'+l.name+'</span></div>'
+      +'<div style="display:flex;align-items:center;gap:14px"><span style="color:'+l.color+';font-family:var(--mn);font-size:13px;font-weight:600">'+fc(amt)+'</span><span class="layer-pct">~'+l.pct+'% of project</span></div>'
+      +'</div>'
+      +'<div class="layer-bar-bg"><div class="layer-bar" style="width:'+l.pct*3.33+'%;background:'+l.color+'"></div></div>'
+      +'<div class="layer-items">'
+      +l.items.map(function(it){return '<div class="layer-item">'+it.l+': <span>'+it.v+'</span></div>';}).join('')
+      +'</div></div>';
+  });
+  $("layers-output").innerHTML=lhtml;
+
+  // Material cards
+  var m=getMats(area,quality);
+  var mcards=[
+    {l:"Steel",v:fn(m.steel/1000,1)+" tons",s:fn(m.steel)+" kg",c:"#6495c4"},
+    {l:"Concrete",v:fn(m.concrete)+" m³",s:"",c:"#7a9e7e"},
+    {l:"Bricks",v:fn(m.bricks),s:"nos",c:"#c4895a"},
+    {l:"Plaster",v:fn(m.plaster)+" sft",s:"",c:"#9b6b9b"},
+    {l:"Paint",v:fn(m.paint)+" sft",s:"",c:"#e0a855"},
+    {l:"Tiles",v:fn(m.tiles)+" sft",s:"incl. 5% wastage",c:"#50aaa0"},
+    {l:"Electrical",v:m.electrical+" pts",s:"",c:"#c9a84c"},
+    {l:"Plumbing",v:m.plumbing+" fix",s:"",c:"#888"}
+  ];
+  $("mat-cards").innerHTML=mcards.map(function(c){
+    return '<div class="stat"><div class="stat-lbl">'+c.l+'</div><div class="stat-val" style="color:'+c.c+';font-size:16px">'+c.v+'</div><div class="stat-sub">'+c.s+'</div></div>';
+  }).join("");
+
+  // Room planning
+  var roomSizes={1:{l:160,d:100,bed:100,k:80,bath:1},2:{l:180,d:110,bed:120,k:90,bath:2},3:{l:220,d:120,bed:140,k:100,bath:3},4:{l:250,d:130,bed:150,k:110,bath:4},5:{l:280,d:140,bed:160,k:120,bath:5}};
+  var rs=roomSizes[beds]||roomSizes[3];
+  $("room-output").innerHTML='<div style="font-size:12px;color:var(--muted);margin-bottom:10px">Typical '+beds+'BHK layout for '+fn(area)+' sqft</div>'
+    +'<div style="display:flex;gap:12px;flex-wrap:wrap;">'
+    +'<div class="stat" style="min-width:110px"><div class="stat-lbl">Living</div><div class="stat-val" style="font-size:15px;color:var(--g)">~'+rs.l+' sft</div></div>'
+    +'<div class="stat" style="min-width:110px"><div class="stat-lbl">Dining</div><div class="stat-val" style="font-size:15px;color:var(--g)">~'+rs.d+' sft</div></div>'
+    +'<div class="stat" style="min-width:110px"><div class="stat-lbl">Each Bedroom</div><div class="stat-val" style="font-size:15px;color:var(--g)">~'+rs.bed+' sft</div></div>'
+    +'<div class="stat" style="min-width:110px"><div class="stat-lbl">Kitchen</div><div class="stat-val" style="font-size:15px;color:var(--g)">~'+rs.k+' sft</div></div>'
+    +'<div class="stat" style="min-width:110px"><div class="stat-lbl">Bathrooms</div><div class="stat-val" style="font-size:15px;color:var(--g)">'+rs.bath+'</div></div>'
+    +'</div>';
+
+  // Also update materials tab & BOQ
+  updateMaterialsTab(area,quality);
+  boqCalc();
+}
+
+// ═══ MATERIALS TAB ═══
+function updateMaterialsTab(area,quality){
+  var m=getMats(area,quality);
+  var sf=N("sf-std",4.0);
+  var rows=[
+    ["Steel","Area × "+sf.toFixed(1),"Area×3.5","Area×4.0","Area×4.5",fn(m.steel)+" kg","kg"],
+    ["Concrete","Area × 0.08","×0.075","×0.08","×0.085",fn(m.concrete)+" m³","m³"],
+    ["Bricks","Area × 8.5","×8.0","×8.5","×9.0",fn(m.bricks),"nos"],
+    ["Plaster","Area × 4","×3.8","×4.0","×4.2",fn(m.plaster)+" sqft","sqft"],
+    ["Paint","Area × 3.5","×3.2","×3.5","×3.8",fn(m.paint)+" sqft","sqft"],
+    ["Floor Tiles","Area × 1.05","×1.0","×1.05","×1.1",fn(m.tiles)+" sqft","sqft"],
+    ["Electrical","Area ÷ 22","1/25 sqft","1/22 sqft","1/18 sqft",m.electrical+" nos","nos"],
+    ["Plumbing","Area ÷ 100","÷120","÷100","÷80",m.plumbing+" nos","nos"]
+  ];
+  $("formula-tbl").innerHTML=rows.map(function(r){
+    return '<tr><td style="font-weight:500;color:var(--tx)">'+r[0]+'</td>'
+      +'<td style="font-family:var(--mn);color:var(--g);font-size:11px">'+r[1]+'</td>'
+      +'<td style="color:var(--muted);font-size:11px">'+r[2]+'</td>'
+      +'<td style="color:var(--g);font-weight:600">'+r[3]+'</td>'
+      +'<td style="color:var(--muted);font-size:11px">'+r[4]+'</td>'
+      +'<td class="r" style="color:var(--blue);font-weight:700;font-family:var(--mn)">'+r[5]+'</td>'
+      +'<td style="color:var(--muted);font-size:11px">'+r[6]+'</td>'
+      +'</tr>';
+  }).join("");
+
+  // Stats
+  $("mat-stats").innerHTML='<div class="stat"><div class="stat-lbl">Steel</div><div class="stat-val" style="color:#6495c4">'+fn(m.steel/1000,1)+' t</div><div class="stat-sub">'+fn(m.steel)+' kg</div></div>'
+    +'<div class="stat"><div class="stat-lbl">Concrete</div><div class="stat-val" style="color:#7a9e7e">'+fn(m.concrete)+' m³</div></div>'
+    +'<div class="stat"><div class="stat-lbl">Bricks</div><div class="stat-val" style="color:#c4895a">'+fn(m.bricks)+'</div><div class="stat-sub">nos</div></div>'
+    +'<div class="stat"><div class="stat-lbl">Plaster</div><div class="stat-val" style="color:#9b6b9b">'+fn(m.plaster)+' sft</div></div>'
+    +'<div class="stat"><div class="stat-lbl">Paint</div><div class="stat-val" style="color:#e0a855">'+fn(m.paint)+' sft</div></div>'
+    +'<div class="stat"><div class="stat-lbl">Tiles</div><div class="stat-val" style="color:#50aaa0">'+fn(m.tiles)+' sft</div></div>'
+    +'<div class="stat"><div class="stat-lbl">Electrical</div><div class="stat-val" style="color:var(--g)">'+m.electrical+'</div><div class="stat-sub">points</div></div>'
+    +'<div class="stat"><div class="stat-lbl">Plumbing</div><div class="stat-val" style="color:var(--muted)">'+m.plumbing+'</div><div class="stat-sub">fixtures</div></div>';
+
+  sensitivityCalc();
+}
+
+function sensitivityCalc(){
+  var a=N("sens-area",2000);
+  $("sens-area").value=a;
+  $("sens-area-lbl").textContent=fn(a);
+  var m=getMats(a,"standard");
+  var r=getRate("standard");
+  var cost=a*r;
+  $("sens-output").innerHTML=[
+    {l:"Steel",v:fn(m.steel/1000,1)+"t",c:"#6495c4"},
+    {l:"Concrete",v:fn(m.concrete)+"m³",c:"#7a9e7e"},
+    {l:"Bricks",v:fn(m.bricks),c:"#c4895a"},
+    {l:"Elec",v:m.electrical+" pts",c:"var(--g)"},
+    {l:"Est. Cost",v:fc(cost*1.2),c:"var(--amber)"}
+  ].map(function(s){
+    return '<div class="stat" style="min-width:100px;flex:none"><div class="stat-lbl">'+s.l+'</div><div class="stat-val" style="color:'+s.c+';font-size:16px">'+s.v+'</div></div>';
+  }).join("");
+}
+
+// ═══ COST ENGINE ═══
+var MODIFIERS=[
+  {id:"m-shape",label:"Building Shape Complexity",options:["Simple Rectangle (×1.00)","Moderate Projections (+5%)","Complex Design (+10%)"],vals:[1,1.05,1.10],default:0},
+  {id:"m-height",label:"Floor Height",options:["Standard 10 ft (×1.00)","Premium 11 ft (+3%)","Luxury 12 ft (+6%)"],vals:[1,1.03,1.06],default:0},
+  {id:"m-span",label:"Column Spacing / Span",options:["3.5–4 m — Economical","4–5 m (+5%)","5–6 m (+10%)"],vals:[1,1.05,1.10],default:0},
+  {id:"m-walls",label:"Wall Material",options:["Red Brick (Standard)","AAC Blocks (−5% structure)","Concrete Blocks (+3%)"],vals:[1,0.95,1.03],default:0},
+  {id:"m-bath",label:"Extra Bathrooms",options:["Standard (per BHK)","1 Extra (+₹1.75L)","2 Extra (+₹3.5L)"],vals:[0,175000,350000],default:0,additive:true},
+  {id:"m-window",label:"Window / Glazing Area",options:["Standard 15–20%","Large Windows (+4%)","Full Glazing (+7%)"],vals:[1,1.04,1.07],default:0},
+  {id:"m-stair",label:"Staircase Type",options:["Standard Dog-Leg","Cantilever (+₹1.5L)","Floating (+₹3L)"],vals:[0,150000,300000],default:0,additive:true},
+  {id:"m-floor",label:"Flooring Material",options:["Ceramic Tiles (Base)","Vitrified (+8%)","Granite/Marble (+18%)"],vals:[1,1.08,1.18],default:0},
+  {id:"m-soil",label:"Soil Condition",options:["Good Soil — Normal Footing","Moderate — Deeper (+5%)","Poor/Soft — Raft (+12%)"],vals:[1,1.05,1.12],default:0},
+  {id:"m-detail",label:"Architectural Detailing",options:["Standard Finish","Moderate Details (+8%)","High Detailing (+15%)"],vals:[1,1.08,1.15],default:0}
+];
+
+function buildModifiers(){
+  var html="";
+  MODIFIERS.forEach(function(m){
+    html+='<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--bd)">'
+      +'<span style="font-size:12px;color:var(--muted);flex:1">'+m.label+'</span>'
+      +'<select id="'+m.id+'" style="width:220px;font-size:11px;padding:5px 8px" onchange="costCalc()">'
+      +m.options.map(function(o,i){return '<option value="'+i+'">'+o+'</option>';}).join('')
+      +'</select></div>';
+  });
+  $("modifiers-list").innerHTML=html;
+}
+
+function costCalc(){
+  var area=N("c-area",2000);
+  var quality=V("c-quality")||"standard";
+  var locF=parseFloat(V("c-loc"))||1.0;
+  var svcPct=N("pct-services",15);
+  var extPct=N("pct-ext",7.5);
+  var rate=getRate(quality);
+  var baseCost=area*rate*locF;
+
+  var multMod=1;
+  var addMod=0;
+  MODIFIERS.forEach(function(m){
+    var sel=$( m.id);
+    if(!sel)return;
+    var idx=parseInt(sel.value)||0;
+    var val=m.vals[idx];
+    if(m.additive){addMod+=val;}
+    else{multMod*=val;}
+  });
+
+  var adjustedBase=baseCost*multMod+addMod;
+  var svcAmt=adjustedBase*(svcPct/100);
+  var extAmt=adjustedBase*(extPct/100);
+  var total=adjustedBase+svcAmt+extAmt;
+
+  var html='<div style="display:flex;flex-direction:column;gap:2px">';
+  var rows=[
+    {l:"Base Cost ("+fn(area)+" sqft × ₹"+rate.toLocaleString("en-IN")+")",v:baseCost,c:"var(--muted)"},
+    {l:"Location Factor ×"+locF,v:baseCost*(locF-1),c:locF>1?"var(--amber)":"var(--muted)"},
+    {l:"Design Modifiers",v:adjustedBase-baseCost*locF,c:"var(--amber)"},
+    {l:"Services ("+svcPct+"%)",v:svcAmt,c:"var(--blue)"},
+    {l:"External Works ("+extPct+"%)",v:extAmt,c:"var(--green)"},
+  ];
+  rows.forEach(function(r){
+    if(Math.abs(r.v)<1)return;
+    html+='<div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--bd)">'
+      +'<span style="font-size:12px;color:var(--muted)">'+r.l+'</span>'
+      +'<span style="font-family:var(--mn);font-size:12px;color:'+r.c+'">'+(r.v>0?"+":"")+fc(r.v)+'</span></div>';
+  });
+  html+='<div style="display:flex;justify-content:space-between;padding:12px 0;margin-top:4px;border-top:1px solid var(--bd)">'
+    +'<span style="font-size:14px;font-weight:700;color:var(--tx)">Total Estimate</span>'
+    +'<span style="font-family:var(--mn);font-size:20px;font-weight:800;color:var(--g)">'+fc(total)+'</span></div>';
+  html+='<div style="display:flex;gap:10px;margin-top:6px">'
+    +'<div class="stat" style="flex:1"><div class="stat-lbl">Cost/sqft</div><div class="stat-val" style="font-size:16px;color:var(--g)">₹'+Math.round(total/area).toLocaleString("en-IN")+'</div></div>'
+    +'<div class="stat" style="flex:1"><div class="stat-lbl">vs Base</div><div class="stat-val" style="font-size:16px;color:var(--amber)">+'+(((total/baseCost)-1)*100).toFixed(1)+'%</div></div>'
+    +'</div></div>';
+  $("cost-breakdown").innerHTML=html;
+}
+
+// ═══ BOQ ═══
+var BOQ_RATES={steel:70,concrete:7500,bricks:10,plaster:35,paint:25,tiles:130,electrical:2500,plumbing:6000};
+function boqCalc(){
+  var area=N("b-area",2000);
+  var quality=V("b-quality")||"standard";
+  var m=getMats(area,quality);
+
+  var sections=[
+    {title:"STRUCTURE",color:"#6495c4",items:[
+      {desc:"Steel Reinforcement",unit:"kg",qty:m.steel,rk:"steel"},
+      {desc:"Concrete (RCC) — Footings, Columns, Slabs",unit:"m³",qty:m.concrete,rk:"concrete"},
+    ]},
+    {title:"SHELL",color:"#7a9e7e",items:[
+      {desc:"Brickwork (CM 1:5)",unit:"nos",qty:m.bricks,rk:"bricks"},
+    ]},
+    {title:"FINISHES",color:"#c4895a",items:[
+      {desc:"Plastering — Internal + External",unit:"sqft",qty:m.plaster,rk:"plaster"},
+      {desc:"Painting — Interior + Exterior",unit:"sqft",qty:m.paint,rk:"paint"},
+      {desc:"Floor Tiling (incl. 5% wastage)",unit:"sqft",qty:m.tiles,rk:"tiles"},
+    ]},
+    {title:"SERVICES",color:"#9b6b9b",items:[
+      {desc:"Electrical Points",unit:"nos",qty:m.electrical,rk:"electrical"},
+      {desc:"Plumbing Fixtures",unit:"nos",qty:m.plumbing,rk:"plumbing"},
+    ]},
+  ];
+
+  var html="<thead><tr><th>#</th><th>Description</th><th>Unit</th><th class='r'>Qty</th><th class='r'>Rate (₹)</th><th class='r'>Amount (₹)</th></tr></thead><tbody>";
+  var grand=0,sno=1;
+  var totals={};
+  sections.forEach(function(sec){
+    html+='<tr><td class="boq-section" colspan="6" style="color:'+sec.color+'">'+(sec.title)+'</td></tr>';
+    var secTotal=0;
+    sec.items.forEach(function(it){
+      var rate=BOQ_RATES[it.rk]||100;
+      var amt=it.qty*rate;
+      secTotal+=amt;grand+=amt;
+      html+='<tr>'
+        +'<td style="color:var(--muted);font-family:var(--mn)">'+sno+++'</td>'
+        +'<td style="color:var(--tx)">'+it.desc+'</td>'
+        +'<td style="color:var(--muted)">'+it.unit+'</td>'
+        +'<td class="r">'+fn(it.qty,1)+'</td>'
+        +'<td class="r"><input class="ci r" type="number" value="'+rate+'" style="width:75px" oninput="BOQ_RATES[\''+it.rk+'\']=parseFloat(this.value)||0;boqCalc()"></td>'
+        +'<td class="r" style="color:var(--g);font-weight:600">₹'+Math.round(amt).toLocaleString("en-IN")+'</td>'
+        +'</tr>';
+    });
+    totals[sec.title]={amt:secTotal,color:sec.color};
+  });
+
+  var svcPct=N("pct-services",15);
+  var extPct=N("pct-ext",7.5);
+  var svcAmt=grand*(svcPct/100);
+  var extAmt=grand*(extPct/100);
+  var finalTotal=grand+svcAmt+extAmt;
+
+  html+='<tr class="boq-total"><td></td><td style="color:var(--g);letter-spacing:0.1em;font-size:10px;text-transform:uppercase">WORKS TOTAL</td><td></td><td></td><td></td><td class="r" style="color:var(--g);font-size:14px;font-family:var(--mn)">₹'+Math.round(grand).toLocaleString("en-IN")+'</td></tr>';
+  html+='<tr><td></td><td style="color:var(--muted)">Services & MEP (+'+svcPct+'%)</td><td></td><td></td><td></td><td class="r" style="color:var(--blue);font-family:var(--mn)">₹'+Math.round(svcAmt).toLocaleString("en-IN")+'</td></tr>';
+  html+='<tr><td></td><td style="color:var(--muted)">External Works (+'+extPct+'%)</td><td></td><td></td><td></td><td class="r" style="color:var(--green);font-family:var(--mn)">₹'+Math.round(extAmt).toLocaleString("en-IN")+'</td></tr>';
+  html+='<tr class="boq-total"><td></td><td style="color:var(--g);font-size:13px;letter-spacing:0.1em">PROJECT ESTIMATE</td><td></td><td></td><td></td><td class="r" style="color:var(--g);font-size:17px;font-family:var(--mn);font-weight:800">₹'+Math.round(finalTotal).toLocaleString("en-IN")+'</td></tr>';
+  html+="</tbody>";
+  $("boq-table").innerHTML=html;
+
+  $("boq-totals").innerHTML=Object.keys(totals).map(function(k){
+    return '<div class="stat"><div class="stat-lbl">'+k+'</div><div class="stat-val" style="font-size:15px;color:'+totals[k].color+'">'+fc(totals[k].amt)+'</div></div>';
+  }).join("")+'<div class="stat"><div class="stat-lbl">Grand Total</div><div class="stat-val" style="color:var(--g)">'+fc(finalTotal)+'</div></div>';
+}
+
+// ═══ EFFICIENCY ═══
+function effCalc(){
+  var shape=N("e-shape",85);
+  var height=N("e-height",93);
+  var span=N("e-span",96);
+  var window_=N("e-window",90);
+  var circ=N("e-circ",95);
+  var score=Math.round((shape*0.25+height*0.2+span*0.2+window_*0.2+circ*0.15));
+
+  var col=score>=90?"var(--green)":score>=80?"var(--g)":score>=70?"var(--amber)":"var(--red)";
+  var interp=score>=90?"Very Economical Design":score>=80?"Good Efficient Design":score>=70?"Moderate Efficiency":score>=60?"Expensive Design":"High Cost Design";
+
+  $("score-num").textContent=score;
+  $("score-num").style.color=col;
+  $("score-circle").style.borderColor=col;
+  $("score-interp").textContent=interp;
+  $("score-interp").style.color=col;
+
+  var params=[
+    {n:"Shape Complexity",v:shape,w:"25%"},
+    {n:"Floor Height",v:height,w:"20%"},
+    {n:"Structural Span",v:span,w:"20%"},
+    {n:"Glazing Ratio",v:window_,w:"20%"},
+    {n:"Circulation Area",v:circ,w:"15%"}
+  ];
+  $("score-params").innerHTML=params.map(function(p){
+    var c=p.v>=90?"var(--green)":p.v>=80?"var(--g)":p.v>=70?"var(--amber)":"var(--red)";
+    return '<div class="score-param"><span class="score-param-name">'+p.n+'<span style="color:var(--dim);font-size:10px"> ('+p.w+')</span></span>'
+      +'<div class="score-bar-wrap"><div class="score-bar" style="width:'+p.v+'%;background:'+c+'"></div></div>'
+      +'<span class="score-param-val" style="color:'+c+'">'+p.v+'</span></div>';
+  }).join("");
+
+  var lowestP=params.reduce(function(a,b){return a.v<b.v?a:b;});
+  $("eff-advice").innerHTML='<div style="font-size:10px;color:var(--gd);font-weight:700;letter-spacing:0.12em;text-transform:uppercase;margin-bottom:8px">Design Advice</div>'
+    +'<div style="font-size:12px;color:var(--muted);line-height:1.8">'
+    +(score>=90?'<span style="color:var(--green)">✓ Excellent.</span> This design is very economical to construct. Good balance of all parameters.':'')
+    +(score<90&&lowestP.v<80?'<span style="color:var(--amber)">△ '+lowestP.n+'</span> is your lowest-scoring parameter at '+lowestP.v+'/100. Consider simplifying this aspect to improve cost efficiency.':'')
+    +'<br><br>Overall efficiency of <strong style="color:'+col+'">'+score+'/100</strong> means construction cost is approximately <strong style="color:'+col+'">'+( score>=90?"5% below average":score>=80?"at market rate":score>=70?"5–10% above average":"10–20% above average")+'</strong>.'
+    +'</div>';
+}
+
+// ═══ MAT RATES EDIT ═══
+function buildMatRatesEdit(){
+  var html="";
+  Object.keys(MAT_RATE_LABELS).forEach(function(k){
+    html+='<div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--bd)">'
+      +'<span style="color:var(--muted);font-size:12px">'+MAT_RATE_LABELS[k]+'</span>'
+      +'<div style="display:flex;align-items:center;gap:5px"><span style="color:var(--muted);font-size:11px">₹</span>'
+      +'<input class="ci r" type="number" value="'+MAT_RATES[k]+'" style="width:70px" oninput="MAT_RATES[\''+k+'\']=parseFloat(this.value)||0;BOQ_RATES[\''+k+'\']=MAT_RATES[\''+k+'\'];boqCalc()"></div>'
+      +'</div>';
+  });
+  $("mat-rates-edit").innerHTML=html;
+}
+
+// ═══ PRINT ═══
+function doPrint(){
+  var area=N("q-area",2000);
+  var quality=V("q-quality")||"standard";
+  var locF=parseFloat(V("q-location"))||1.0;
+  var locName=$("q-location").options[$("q-location").selectedIndex].text.split(" (")[0];
+  var m=getMats(area,quality);
+  var rate=getRate(quality);
+  var baseCost=area*rate*locF;
+  var svcPct=N("pct-services",15);
+  var extPct=N("pct-ext",7.5);
+  var totalLow=baseCost;
+  var totalHigh=baseCost*(1+svcPct/100+extPct/100);
+  var date=new Date().toLocaleDateString("en-IN");
+
+  var html="<!DOCTYPE html><html><head><meta charset='UTF-8'><title>Preliminary Estimate — i3D Studio</title>"
+    +"<style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:'Segoe UI',sans-serif;color:#111;background:#fff;padding:28px;font-size:12px;max-width:210mm;margin:0 auto}"
+    +".hdr{display:flex;justify-content:space-between;align-items:flex-start;padding-bottom:14px;border-bottom:3px solid #c9a84c;margin-bottom:22px}"
+    +".logo{font-family:Georgia,serif;font-size:22px;font-weight:700}.logo-sub{font-size:9px;color:#888;letter-spacing:0.12em;text-transform:uppercase}"
+    +".meta{text-align:right;font-size:11px;color:#666}"
+    +".sec{font-size:10px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:#c9a84c;margin:18px 0 6px;border-bottom:1px solid #eee;padding-bottom:4px}"
+    +"table{width:100%;border-collapse:collapse;margin:8px 0}"
+    +"th{background:#f5f0e8;padding:6px 8px;font-size:9px;font-weight:700;letter-spacing:0.08em;border-bottom:2px solid #c9a84c;text-align:left}"
+    +"td{padding:5px 8px;border-bottom:1px solid #eee;font-size:11px}"
+    +".r{text-align:right}.hero{background:#fdf8ee;border:2px solid #c9a84c;border-radius:8px;padding:20px;text-align:center;margin:16px 0}"
+    +".hero-lbl{font-size:10px;color:#888;text-transform:uppercase;letter-spacing:0.1em}"
+    +".hero-val{font-size:32px;font-weight:800;color:#c9a84c;font-family:Georgia,serif}"
+    +".sigs{margin-top:50px;padding-top:12px;border-top:1px solid #ddd;display:flex;justify-content:space-between}"
+    +".sig{flex:1;text-align:center;font-size:9px;color:#888}"
+    +".sig-line{border-top:1px solid #aaa;margin-top:30px;padding-top:5px}"
+    +".footer{margin-top:18px;text-align:center;font-size:8px;color:#ccc;border-top:1px solid #f0f0f0;padding-top:10px}"
+    +"@page{size:A4;margin:12mm}</style></head><body>"
+    +"<div class='hdr'><div><div class='logo'>i3d Studio</div><div class='logo-sub'>Inspirational Architecture — Coimbatore</div></div>"
+    +"<div class='meta'>PRELIMINARY BUILDING ESTIMATE<br>Date: "+date+"<br>Ref: I3D-QUICK-"+date.replace(/\//g,""+"</div></div>")
+    +"<div class='sec'>Project Details</div>"
+    +"<table><tr><th>Parameter</th><th>Value</th><th>Parameter</th><th>Value</th></tr>"
+    +"<tr><td>Built-up Area</td><td><strong>"+fn(area)+" sqft</strong></td><td>Quality</td><td><strong>"+quality.charAt(0).toUpperCase()+quality.slice(1)+"</strong></td></tr>"
+    +"<tr><td>Floors</td><td>"+V("q-floors").replace("1","G (Ground)").replace("2","G+1").replace("3","G+2").replace("4","G+3")+"</td><td>Location</td><td>"+locName+"</td></tr>"
+    +"<tr><td>Bedrooms</td><td>"+N("q-beds",3)+" BHK</td><td>Rate Applied</td><td>₹"+rate.toLocaleString("en-IN")+"/sqft × "+locF+"</td></tr></table>"
+    +"<div class='hero'><div class='hero-lbl'>Preliminary Project Cost Estimate</div><div class='hero-val'>"+fc(totalLow)+" – "+fc(totalHigh)+"</div><div style='font-size:11px;color:#888;margin-top:4px'>Inclusive of services & external works</div></div>"
+    +"<div class='sec'>Structure</div>"
+    +"<table><tr><th>Item</th><th class='r'>Quantity</th><th>Unit</th></tr>"
+    +"<tr><td>Steel Reinforcement</td><td class='r'>"+fn(m.steel)+"</td><td>kg ("+fn(m.steel/1000,1)+" tons)</td></tr>"
+    +"<tr><td>Concrete (RCC)</td><td class='r'>"+fn(m.concrete)+"</td><td>m³</td></tr></table>"
+    +"<div class='sec'>Shell</div>"
+    +"<table><tr><th>Item</th><th class='r'>Quantity</th><th>Unit</th></tr>"
+    +"<tr><td>Brickwork</td><td class='r'>"+fn(m.bricks)+"</td><td>nos</td></tr></table>"
+    +"<div class='sec'>Finishes</div>"
+    +"<table><tr><th>Item</th><th class='r'>Quantity</th><th>Unit</th></tr>"
+    +"<tr><td>Plastering</td><td class='r'>"+fn(m.plaster)+"</td><td>sqft</td></tr>"
+    +"<tr><td>Painting</td><td class='r'>"+fn(m.paint)+"</td><td>sqft</td></tr>"
+    +"<tr><td>Floor Tiling</td><td class='r'>"+fn(m.tiles)+"</td><td>sqft</td></tr></table>"
+    +"<div class='sec'>Services</div>"
+    +"<table><tr><th>Item</th><th class='r'>Quantity</th><th>Unit</th></tr>"
+    +"<tr><td>Electrical Points</td><td class='r'>"+m.electrical+"</td><td>nos</td></tr>"
+    +"<tr><td>Plumbing Fixtures</td><td class='r'>"+m.plumbing+"</td><td>nos</td></tr></table>"
+    +"<div class='sec'>Cost Summary</div>"
+    +"<table><tr><th>Item</th><th class='r'>Amount</th></tr>"
+    +"<tr><td>Construction (Labour + Material)</td><td class='r'>"+fc(baseCost)+"</td></tr>"
+    +"<tr><td>Services & MEP ("+svcPct+"%)</td><td class='r'>"+fc(baseCost*svcPct/100)+"</td></tr>"
+    +"<tr><td>External Works ("+extPct+"%)</td><td class='r'>"+fc(baseCost*extPct/100)+"</td></tr>"
+    +"<tr><td style='font-weight:700'>PROJECT ESTIMATE RANGE</td><td class='r' style='font-weight:800;color:#c9a84c;font-size:14px'>"+fc(totalLow)+" – "+fc(totalHigh)+"</td></tr></table>"
+    +"<div style='font-size:10px;color:#888;margin-top:12px;padding:10px;background:#fdf8ee;border-radius:5px'>Disclaimer: This is a preliminary thumb-rule estimate for early feasibility only. Not a substitute for detailed BOQ. Prepared by i3d Studio, Coimbatore.</div>"
+    +"<div class='sigs'><div class='sig'><div class='sig-line'>Client</div></div><div class='sig'><div class='sig-line'>Architect — i3d Studio</div></div><div class='sig'><div class='sig-line'>Date</div></div></div>"
+    +"<div class='footer'>i3d Studio — Architect's Rapid Estimation Engine — Coimbatore — "+date+"</div>"
+    +"</body></html>";
+
+  var win=window.open("","_blank","width=900,height=700");
+  if(!win){alert("Allow popups for this site to use Print/PDF.");return;}
+  win.document.write(html);
+  win.document.close();
+  win.focus();
+  setTimeout(function(){win.print();},500);
+}
+
+function printBOQ(){
+  var area=N("b-area",2000);
+  var quality=V("b-quality")||"standard";
+  var m=getMats(area,quality);
+  var date=new Date().toLocaleDateString("en-IN");
+  var rows=[
+    ["Steel Reinforcement","kg",fn(m.steel,0),BOQ_RATES.steel,Math.round(m.steel*BOQ_RATES.steel)],
+    ["Concrete (RCC)","m³",fn(m.concrete,1),BOQ_RATES.concrete,Math.round(m.concrete*BOQ_RATES.concrete)],
+    ["Brickwork (CM 1:5)","nos",fn(m.bricks,0),BOQ_RATES.bricks,Math.round(m.bricks*BOQ_RATES.bricks)],
+    ["Plastering","sqft",fn(m.plaster,0),BOQ_RATES.plaster,Math.round(m.plaster*BOQ_RATES.plaster)],
+    ["Painting","sqft",fn(m.paint,0),BOQ_RATES.paint,Math.round(m.paint*BOQ_RATES.paint)],
+    ["Floor Tiling","sqft",fn(m.tiles,0),BOQ_RATES.tiles,Math.round(m.tiles*BOQ_RATES.tiles)],
+    ["Electrical Points","nos",fn(m.electrical,0),BOQ_RATES.electrical,Math.round(m.electrical*BOQ_RATES.electrical)],
+    ["Plumbing Fixtures","nos",fn(m.plumbing,0),BOQ_RATES.plumbing,Math.round(m.plumbing*BOQ_RATES.plumbing)]
+  ];
+  var grand=rows.reduce(function(s,r){return s+r[4];},0);
+  var svcPct=N("pct-services",15);var extPct=N("pct-ext",7.5);
+  var finalTotal=grand*(1+svcPct/100+extPct/100);
+
+  var html="<!DOCTYPE html><html><head><meta charset='UTF-8'><title>BOQ — i3D Studio</title>"
+    +"<style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:'Segoe UI',sans-serif;color:#111;padding:24px;font-size:12px}"
+    +".hdr{display:flex;justify-content:space-between;padding-bottom:12px;border-bottom:3px solid #c9a84c;margin-bottom:16px}"
+    +"table{width:100%;border-collapse:collapse}th{background:#f5f0e8;padding:7px 8px;font-size:9px;font-weight:700;letter-spacing:0.08em;border-bottom:2px solid #c9a84c;text-align:left}"
+    +"td{padding:5px 8px;border-bottom:1px solid #eee;font-size:11px}.r{text-align:right}"
+    +".total-row td{font-weight:700;background:#f5f0e8;font-size:13px}@page{size:A4;margin:12mm}</style></head><body>"
+    +"<div class='hdr'><div><strong style='font-size:18px;font-family:Georgia'>i3d Studio</strong><br><span style='font-size:9px;color:#888;letter-spacing:0.1em;text-transform:uppercase'>Preliminary BOQ</span></div>"
+    +"<div style='text-align:right;color:#888;font-size:11px'>Area: "+fn(area)+" sqft · "+quality+"<br>Date: "+date+"</div></div>"
+    +"<table><thead><tr><th>#</th><th>Description</th><th>Unit</th><th class='r'>Qty</th><th class='r'>Rate (₹)</th><th class='r'>Amount (₹)</th></tr></thead><tbody>"
+    +rows.map(function(r,i){return "<tr><td style='color:#888'>"+(i+1)+"</td><td>"+r[0]+"</td><td>"+r[1]+"</td><td class='r'>"+r[2]+"</td><td class='r'>"+r[3].toLocaleString("en-IN")+"</td><td class='r' style='font-weight:600'>"+r[4].toLocaleString("en-IN")+"</td></tr>";}).join("")
+    +"<tr><td colspan='5' style='font-weight:700;color:#888'>WORKS TOTAL</td><td class='r' style='font-weight:800;font-size:14px;color:#c9a84c'>"+grand.toLocaleString("en-IN")+"</td></tr>"
+    +"<tr><td colspan='5'>Services & MEP (+"+svcPct+"%)</td><td class='r' style='color:#6495c4'>"+Math.round(grand*svcPct/100).toLocaleString("en-IN")+"</td></tr>"
+    +"<tr><td colspan='5'>External Works (+"+extPct+"%)</td><td class='r' style='color:#4caf7a'>"+Math.round(grand*extPct/100).toLocaleString("en-IN")+"</td></tr>"
+    +"<tr class='total-row'><td colspan='5'>PROJECT ESTIMATE</td><td class='r' style='color:#c9a84c;font-size:16px'>"+Math.round(finalTotal).toLocaleString("en-IN")+"</td></tr>"
+    +"</tbody></table>"
+    +"<p style='font-size:9px;color:#aaa;margin-top:14px'>Preliminary estimate only. Not a substitute for detailed BOQ. Prepared by i3d Studio, Coimbatore.</p>"
+    +"</body></html>";
+
+  var win=window.open("","_blank","width=860,height=650");
+  if(!win){alert("Allow popups for this site.");return;}
+  win.document.write(html);win.document.close();win.focus();
+  setTimeout(function(){win.print();},400);
+}
+
+// ═══ TABS ═══
+document.querySelectorAll(".tab").forEach(function(b){
+  b.addEventListener("click",function(){
+    document.querySelectorAll(".tab").forEach(function(x){x.classList.remove("active");});
+    document.querySelectorAll(".tab-panel").forEach(function(x){x.classList.remove("active");});
+    b.classList.add("active");
+    document.getElementById("tab-"+b.dataset.tab).classList.add("active");
+  });
+});
+
+// ═══ INIT ═══
+buildModifiers();
+buildMatRatesEdit();
+calcAll();
+costCalc();
+effCalc();
+</script>
+</body>
+</html>
