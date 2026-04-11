@@ -284,6 +284,13 @@ nav{background:#0a0c08;border-bottom:1px solid var(--border);padding:0 40px;disp
 </style>
 
 <script>
+
+// Reveal email without exposing it in HTML (prevents Cloudflare mangling)
+document.addEventListener('DOMContentLoaded', function(){
+  var e = document.getElementById('eml');
+  if(e){ e.textContent = ['shakhith','gmail.com'].join('@'); }
+});
+
 // Early-load nav function so inline onclick handlers work before main script
 function showPage(id){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
@@ -310,7 +317,7 @@ function showPage(id){
   </div>
   <div class="hdr-right">
     <strong>Shakhith A.M — Architect</strong>
-    CA/97/21884 &nbsp;·&nbsp; 9363113693<br>shakhith[at]gmail[dot]com
+    CA/97/21884 &nbsp;·&nbsp; 9363113693<br><span id="eml"></span>
   </div>
 </header>
 
@@ -762,7 +769,7 @@ function showPage(id){
 
 <div class="toast" id="toast"></div>
 
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+<script>
 // ══════════════════════════════════════════
 //  SERVICE DATA — REVISED RATES + VISUALISATION
 // ══════════════════════════════════════════
@@ -1117,4 +1124,16 @@ function copyUPI(){
 }
 function genRef(){
   const d=new Date();
-  return `i3D-${String(d.getDate()).padStart(2,'0')}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getFullYear()).slice(-2)}-${Math.floor(1000+Math.random(
+  return `i3D-${String(d.getDate()).padStart(2,'0')}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getFullYear()).slice(-2)}-${Math.floor(1000+Math.random()*9000)}`;
+}
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),3000);
+}
+
+// INIT
+renderGrid();
+</script>
+</body>
+</html>
