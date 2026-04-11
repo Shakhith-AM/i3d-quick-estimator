@@ -282,6 +282,20 @@ nav{background:#0a0c08;border-bottom:1px solid var(--border);padding:0 40px;disp
 }
 @media print{header,nav,.pro-grid,.btn-row,.cat-filter,.nudge-strip{display:none!important;}}
 </style>
+
+<script>
+// Early-load nav function so inline onclick handlers work before main script
+function showPage(id){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  var pg = document.getElementById('page-'+id);
+  if(pg) pg.classList.add('active');
+  var map={estimator:0,consult:1,library:2};
+  var tabs = document.querySelectorAll('.tab');
+  if(tabs[map[id]]) tabs[map[id]].classList.add('active');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+</script>
 </head>
 <body>
 
@@ -296,7 +310,7 @@ nav{background:#0a0c08;border-bottom:1px solid var(--border);padding:0 40px;disp
   </div>
   <div class="hdr-right">
     <strong>Shakhith A.M — Architect</strong>
-    CA/97/21884 &nbsp;·&nbsp; 9363113693<br><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="c0b3a8a1aba8a9b4a880a7ada1a9aceea3afad">[email&#160;protected]</a>
+    CA/97/21884 &nbsp;·&nbsp; 9363113693<br>shakhith[at]gmail[dot]com
   </div>
 </header>
 
