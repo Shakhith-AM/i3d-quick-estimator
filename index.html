@@ -296,7 +296,7 @@ nav{background:#0a0c08;border-bottom:1px solid var(--border);padding:0 40px;disp
   </div>
   <div class="hdr-right">
     <strong>Shakhith A.M — Architect</strong>
-    CA/97/21884 &nbsp;·&nbsp; 9363113693<br>shakhith@gmail.com
+    CA/97/21884 &nbsp;·&nbsp; 9363113693<br><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="c0b3a8a1aba8a9b4a880a7ada1a9aceea3afad">[email&#160;protected]</a>
   </div>
 </header>
 
@@ -748,7 +748,7 @@ nav{background:#0a0c08;border-bottom:1px solid var(--border);padding:0 40px;disp
 
 <div class="toast" id="toast"></div>
 
-<script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 // ══════════════════════════════════════════
 //  SERVICE DATA — REVISED RATES + VISUALISATION
 // ══════════════════════════════════════════
@@ -988,11 +988,13 @@ function submitConsult(){
   document.getElementById('c-pt').textContent='₹'+total.toLocaleString('en-IN');
   document.getElementById('c-ua').textContent='₹'+total.toLocaleString('en-IN');
 
-  const upi=`upi://pay?pa=interactive.dimensions0007@uboi&pn=i3D%20Studio&am=${total}&tn=Consultation%20Fee`;
-  document.getElementById('c-qr').src=`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(upi)}`;
-
   document.getElementById('c-s1').style.display='none';
   document.getElementById('c-s2').style.display='block';
+
+  const upi=`upi://pay?pa=interactive.dimensions0007@uboi&pn=i3D%20Studio&am=${total}&tn=Consultation%20Fee`;
+  const qrEl=document.getElementById('c-qr');
+  if(qrEl) qrEl.src=`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(upi)}`;
+
   window.scrollTo({top:0,behavior:'smooth'});
 }
 
@@ -1101,16 +1103,4 @@ function copyUPI(){
 }
 function genRef(){
   const d=new Date();
-  return `i3D-${String(d.getDate()).padStart(2,'0')}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getFullYear()).slice(-2)}-${Math.floor(1000+Math.random()*9000)}`;
-}
-function showToast(msg){
-  const t=document.getElementById('toast');
-  t.textContent=msg;t.classList.add('show');
-  setTimeout(()=>t.classList.remove('show'),3000);
-}
-
-// INIT
-renderGrid();
-</script>
-</body>
-</html>
+  return `i3D-${String(d.getDate()).padStart(2,'0')}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getFullYear()).slice(-2)}-${Math.floor(1000+Math.random(
