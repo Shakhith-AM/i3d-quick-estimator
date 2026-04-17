@@ -440,29 +440,32 @@ function showPage(id){
   <div style="margin-top:32px;">
     <div style="font-size:.55rem;letter-spacing:.35em;color:var(--gold-d);text-transform:uppercase;padding-bottom:12px;border-bottom:1px solid var(--border-s);margin-bottom:18px;">Pro Tools — Unlock Advanced Analysis</div>
     <div class="pro-grid">
-      <div class="pro-card">
-        <div class="pro-lock">🔒</div>
+      <div class="pro-card" id="pro-card-CE">
+        <div class="pro-lock" id="pro-lock-CE">🔒</div>
         <div class="pro-title">Cost Engine — Pro</div>
         <div class="pro-desc">Detailed cost analysis with 10 architectural modifiers, sensitivity analysis, and export capabilities.</div>
         <div class="pro-price">₹799</div>
         <div class="pro-note">One-time unlock · All Pro features</div>
-        <button class="pro-btn" onclick="openUnlock('Cost Engine — Pro','799','Detailed cost analysis with 10 architectural modifiers, sensitivity analysis & export')">Unlock Pro Features</button>
+        <div id="pro-unlocked-CE" style="display:none;background:rgba(78,138,68,.1);border:1px solid rgba(78,138,68,.3);border-radius:2px;padding:10px;margin-bottom:10px;font-size:.68rem;color:#4e8a44;text-align:center;">✓ Unlocked — Full access active</div>
+        <button class="pro-btn" id="pro-btn-CE" onclick="openProUnlock('CE','Cost Engine — Pro',799)">Unlock Pro Features</button>
       </div>
-      <div class="pro-card">
-        <div class="pro-lock">🔒</div>
+      <div class="pro-card" id="pro-card-BOQ">
+        <div class="pro-lock" id="pro-lock-BOQ">🔒</div>
         <div class="pro-title">BOQ Generator — Pro</div>
         <div class="pro-desc">Generate detailed Bill of Quantities with editable rates, section breakdowns, and printable PDF reports.</div>
         <div class="pro-price">₹1,499</div>
         <div class="pro-note">One-time unlock · All Pro features</div>
-        <button class="pro-btn" onclick="openUnlock('BOQ Generator — Pro','1499','Detailed Bill of Quantities with editable rates, section breakdowns & printable PDF reports')">Unlock Pro Features</button>
+        <div id="pro-unlocked-BOQ" style="display:none;background:rgba(78,138,68,.1);border:1px solid rgba(78,138,68,.3);border-radius:2px;padding:10px;margin-bottom:10px;font-size:.68rem;color:#4e8a44;text-align:center;">✓ Unlocked — Full access active</div>
+        <button class="pro-btn" id="pro-btn-BOQ" onclick="openProUnlock('BOQ','BOQ Generator — Pro',1499)">Unlock Pro Features</button>
       </div>
-      <div class="pro-card">
-        <div class="pro-lock">🔒</div>
+      <div class="pro-card" id="pro-card-DE">
+        <div class="pro-lock" id="pro-lock-DE">🔒</div>
         <div class="pro-title">Design Efficiency — Pro</div>
         <div class="pro-desc">Score your design across 5 architectural parameters and get professional optimisation insights.</div>
         <div class="pro-price">₹799</div>
         <div class="pro-note">One-time unlock · All Pro features</div>
-        <button class="pro-btn" onclick="openUnlock('Design Efficiency — Pro','799','Design scoring across 5 architectural parameters with professional optimisation insights')">Unlock Pro Features</button>
+        <div id="pro-unlocked-DE" style="display:none;background:rgba(78,138,68,.1);border:1px solid rgba(78,138,68,.3);border-radius:2px;padding:10px;margin-bottom:10px;font-size:.68rem;color:#4e8a44;text-align:center;">✓ Unlocked — Full access active</div>
+        <button class="pro-btn" id="pro-btn-DE" onclick="openProUnlock('DE','Design Efficiency — Pro',799)">Unlock Pro Features</button>
       </div>
     </div>
   </div>
@@ -1487,6 +1490,73 @@ async function ariaSend(text){
   ariaLoading=false;
 }
 </script>
+
+<!-- PRO UNLOCK MODAL -->
+<div class="modal-bg" id="proModal">
+  <div class="modal">
+    <span class="modal-x" onclick="closeProModal()">&#x2715;</span>
+    <div class="modal-title" id="pro-modal-title">Unlock Pro Features</div>
+    <div class="modal-sub" id="pro-modal-sub"></div>
+    <div id="pro-step-pay">
+      <div style="text-align:center;margin-bottom:16px;">
+        <div style="font-size:.58rem;letter-spacing:.24em;color:var(--text-d);text-transform:uppercase;margin-bottom:10px;">Scan &amp; Pay - UPI</div>
+        <div class="qr-wrap" style="width:136px;height:136px;margin:0 auto 10px;"><img src="i3d-payment-qr.png" alt="UPI QR" style="width:100%;height:100%;object-fit:contain;"></div>
+        <div class="upi-id">interactive.dimensions0007@uboi</div>
+        <div class="bank-nm">Union Bank of India - i3D Studio</div>
+        <div style="font-size:.62rem;color:var(--text-m);line-height:1.7;margin-top:8px;">After payment, send screenshot on WhatsApp. You will receive your unlock code within a few hours.</div>
+      </div>
+      <div class="btn-row" style="flex-direction:column;">
+        <button class="btn btn-wa btn-full" onclick="sendPaymentWA()">Send Payment Screenshot on WhatsApp</button>
+        <button class="btn btn-ghost btn-full" style="margin-top:8px;" onclick="showCodeEntry()">I already have a code</button>
+      </div>
+    </div>
+    <div id="pro-step-code" style="display:none;">
+      <div style="font-size:.7rem;color:var(--text-d);margin-bottom:14px;line-height:1.8;">Enter the unlock code sent by i3D Studio on WhatsApp.</div>
+      <div class="field" style="margin-bottom:14px;">
+        <label>Unlock Code</label>
+        <input type="text" id="pro-code-input" placeholder="e.g. CE-1704-8374" style="text-transform:uppercase;letter-spacing:.12em;font-family:JetBrains Mono,monospace;font-size:1rem;text-align:center;" maxlength="14" oninput="this.value=this.value.toUpperCase()">
+      </div>
+      <div id="pro-code-err" style="font-size:.65rem;color:#e05050;margin-bottom:10px;display:none;"></div>
+      <div class="btn-row" style="flex-direction:column;">
+        <button class="btn btn-gold btn-full" onclick="validateCode()">Activate</button>
+        <button class="btn btn-ghost btn-full" style="margin-top:8px;" onclick="showPayStep()">Back to payment</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+var _proPrefix="",_proFeature="",_proPrice=0;
+var PRO_STORAGE="i3d-pro-unlocked";
+(function(){try{var u=JSON.parse(localStorage.getItem(PRO_STORAGE)||"[]");u.forEach(function(p){applyUnlock(p);});}catch(e){}})();
+function openProUnlock(prefix,feature,price){
+  _proPrefix=prefix;_proFeature=feature;_proPrice=price;
+  document.getElementById("pro-modal-title").textContent=feature;
+  document.getElementById("pro-modal-sub").textContent="One-time unlock: RS"+price.toLocaleString("en-IN")+". Pay via UPI, send screenshot on WhatsApp, and receive your unlock code.";
+  showPayStep();
+  document.getElementById("proModal").classList.add("open");
+}
+function closeProModal(){document.getElementById("proModal").classList.remove("open");document.getElementById("pro-code-input").value="";document.getElementById("pro-code-err").style.display="none";}
+function showPayStep(){document.getElementById("pro-step-pay").style.display="block";document.getElementById("pro-step-code").style.display="none";}
+function showCodeEntry(){document.getElementById("pro-step-pay").style.display="none";document.getElementById("pro-step-code").style.display="block";document.getElementById("pro-code-input").focus();}
+function sendPaymentWA(){var msg="Payment for Pro Unlock Feature: "+_proFeature+" Amount: RS"+_proPrice.toLocaleString("en-IN")+" Payment screenshot attached. Please send my unlock code. UPI: interactive.dimensions0007@uboi";window.open("https://wa.me/919363113693?text="+encodeURIComponent(msg),"_blank");}
+function validateCode(){
+  var code=document.getElementById("pro-code-input").value.trim().toUpperCase();
+  var errEl=document.getElementById("pro-code-err");
+  if(!/^(CE|BOQ|DE)-\d{4}-\d{4}$/.test(code)){errEl.style.display="block";errEl.textContent="Invalid code format. Expected: CE-1704-8374";return;}
+  if(code.split("-")[0]!==_proPrefix){errEl.style.display="block";errEl.textContent="This code is for a different feature. Please use the correct code.";return;}
+  errEl.style.display="none";
+  try{var u=JSON.parse(localStorage.getItem(PRO_STORAGE)||"[]");if(!u.includes(_proPrefix)){u.push(_proPrefix);localStorage.setItem(PRO_STORAGE,JSON.stringify(u));}}catch(e){}
+  applyUnlock(_proPrefix);closeProModal();showToast("Unlocked: "+_proFeature);
+}
+function applyUnlock(prefix){
+  var l=document.getElementById("pro-lock-"+prefix);
+  var b=document.getElementById("pro-btn-"+prefix);
+  var u=document.getElementById("pro-unlocked-"+prefix);
+  if(l)l.textContent="🔓";if(b)b.style.display="none";if(u)u.style.display="block";
+}
+document.addEventListener("DOMContentLoaded",function(){var ci=document.getElementById("pro-code-input");if(ci)ci.addEventListener("keydown",function(e){if(e.key==="Enter")validateCode();});});
+<\/script>
 
 <!-- Aria Chat FAB -->
 <div id="aria-fab" class="aria-fab" onclick="toggleAria()">
